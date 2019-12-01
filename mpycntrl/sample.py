@@ -1,5 +1,5 @@
 
-import serial
+import serial # its pyserial 
 from mpycntrl import *
 
 def sample_code():

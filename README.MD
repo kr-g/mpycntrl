@@ -6,7 +6,7 @@ Control MicroPython with your own coding
 
 ## Code
 
-    import serial
+    import serial # its pyserial
     from mpycntrl import *
         
     def sample_code():
@@ -82,6 +82,6 @@ Control MicroPython with your own coding
 
 display all available cmd line options with
 
-    python -m mpycntrl.py -h
+    python3 -m mpycntrl -h
 
 
