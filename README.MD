@@ -6,9 +6,10 @@ Control MicroPython with your own coding
 
 ## Code
 
-    import serial # its pyserial
+
+    import serial # its pyserial 
     from mpycntrl import *
-        
+
     def sample_code():
         
         debug = True # display more information 
@@ -76,14 +77,25 @@ Control MicroPython with your own coding
                 r = mpyc.cmd_rm_r("www")
                 print( "received", r )
                 print( "execution time:", to.diff_time() )
-
+                
+            # hard reset the micropython board
+            r = mpyc.send_hardreset()
+            print( "received", r )
+            
+            # follow the output
+            # loop until users breaks with cntrl+c
+            while True:
+                r = mpyc.readlines()        
+                for l in r:
+                    print( r )
+                
 
 ## cmd line
 
 display all available cmd line options with
 
-    python3 -m mpycntrl -h
 
+    python3 -m mpycntrl -h
 
     usage: __main__.py [-h] [-v] [-port PORT] [-baud BAUD] [-bytesize BYTESIZE]
                        [-parity {N,E,O}] [-stopbits STOPBITS] [-timeout TIMEOUT]
