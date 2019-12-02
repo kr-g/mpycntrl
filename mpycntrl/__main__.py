@@ -23,6 +23,7 @@ def main():
     maxretry = 3
     follow = False
     debug = False
+    trace = False
     
     port = '/dev/ttyUSB0'
     baud = 115200
@@ -48,6 +49,8 @@ def main():
                         help="stopbits to use (default: %(default)s)", default=stopbits )
     parser.add_argument("-timeout", "-to", type=float, dest='timeout', action="store",
                         help="timeout in sec to use (default: %(default)s)", default=timeout )
+    parser.add_argument("-trace", "-t", dest='trace', action="store_true",
+                        help="display trace info (default: %(default)s)", default=trace )
     parser.add_argument("-debug", "-d", dest='debug', action="store_true",
                         help="display debug info (default: %(default)s)", default=debug )
     parser.add_argument("-showtime", dest='show_time', action="store_true",
@@ -104,7 +107,7 @@ def main():
                        bytesize=args.bytesize, parity=args.parity, stopbits=args.stopbits,
                        timeout=args.timeout) as ser:
 
-        mpyc = MPyControl(ser,debug=args.debug)
+        mpyc = MPyControl(ser,debug=args.debug,trace=args.trace)
         
         r = None
         

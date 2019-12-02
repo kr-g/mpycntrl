@@ -13,6 +13,7 @@ Control MicroPython with your own coding
     def sample_code():
         
         debug = True # display more information 
+        trace = False # display no detail trace information 
 
         port = '/dev/ttyUSB0'
         baud = 115200
@@ -25,7 +26,7 @@ Control MicroPython with your own coding
                            bytesize=bytesize, parity=parity, stopbits=stopbits,
                            timeout=timeout) as ser:
 
-            mpyc = MPyControl(ser,debug=debug)
+            mpyc = MPyControl(ser,debug=debug,trace=trace)
                 
             # enter raw-repl mode
             r = mpyc.send_cntrl_c()
@@ -78,6 +79,10 @@ Control MicroPython with your own coding
                 print( "received", r )
                 print( "execution time:", to.diff_time() )
                 
+            # get some info from micropython
+            r = mpyc.send_collect_ids()
+            print( "received", r )
+            
             # hard reset the micropython board
             r = mpyc.send_hardreset()
             print( "received", r )
@@ -90,7 +95,11 @@ Control MicroPython with your own coding
                     print( r )
                 
 
+
+                
+
 ## cmd line
+
 
 display all available cmd line options with
 
@@ -99,8 +108,8 @@ display all available cmd line options with
 
     usage: __main__.py [-h] [-v] [-port PORT] [-baud BAUD] [-bytesize BYTESIZE]
                        [-parity {N,E,O}] [-stopbits STOPBITS] [-timeout TIMEOUT]
-                       [-debug] [-showtime] [-follow] [-maxretry MAXRETRY]
-                       [-blocksize BLOCKSIZE] [-translate]
+                       [-trace] [-debug] [-showtime] [-follow]
+                       [-maxretry MAXRETRY] [-blocksize BLOCKSIZE] [-translate]
                        [-eval EVAL | -reset | -hardreset | -cntrlc | -meminfo | -ls [PATH]
                        | -ll [PATH] | -rm PATH | -mkdir PATH | -rmdir PATH | -get
                        PATH PATH | -put PATH [PATH ...]]
@@ -118,6 +127,7 @@ display all available cmd line options with
       -stopbits STOPBITS    stopbits to use (default: 1)
       -timeout TIMEOUT, -to TIMEOUT
                             timeout in sec to use (default: 0.35)
+      -trace, -t            display trace info (default: False)
       -debug, -d            display debug info (default: False)
       -showtime             display execution time (default: False)
       -follow, -f           don't exit, keep following the output of MicroPython

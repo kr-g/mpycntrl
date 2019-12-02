@@ -5,6 +5,7 @@ from mpycntrl import *
 def sample_code():
     
     debug = True # display more information 
+    trace = False # display no detail trace information 
 
     port = '/dev/ttyUSB0'
     baud = 115200
@@ -17,7 +18,7 @@ def sample_code():
                        bytesize=bytesize, parity=parity, stopbits=stopbits,
                        timeout=timeout) as ser:
 
-        mpyc = MPyControl(ser,debug=debug)
+        mpyc = MPyControl(ser,debug=debug,trace=trace)
             
         # enter raw-repl mode
         r = mpyc.send_cntrl_c()
@@ -70,6 +71,10 @@ def sample_code():
             print( "received", r )
             print( "execution time:", to.diff_time() )
             
+        # get some info from micropython
+        r = mpyc.send_collect_ids()
+        print( "received", r )
+        
         # hard reset the micropython board
         r = mpyc.send_hardreset()
         print( "received", r )

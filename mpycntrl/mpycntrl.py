@@ -27,18 +27,16 @@ class _ChangeTimeout:
 
 class MPyControl:
     
-    VERSION = "0.0.1b"
-
     """
-
         control micropython with your own code
-
-
     """
 
-    def __init__(self, serial, debug=True, tout=None):
+    VERSION = "0.0.3"
+
+    def __init__(self, serial, debug=True, trace=False, tout=None):
         self.serial = serial
         self.debug = debug
+        self.trace = trace
         self.tout = tout
         self.print("using",serial)
         self.reset_timer()
@@ -52,32 +50,52 @@ class MPyControl:
     def print( self, *args, **kwargs ):
         if self.debug:
             print( "(debug)", *args, **kwargs )
+            
+    def print_t( self, *args, **kwargs ):
+        if self.trace:
+            print( "(trace)", *args, **kwargs )
     
     def timeout(self, timeout ):
         """change the timeout securely in a with code block"""
         return _ChangeTimeout( self, timeout )
     
+    def read(self,flen):
+        r = self.serial.read( flen )
+        return r        
+    
+    def write(self,bytes):
+        self.print( "sending", bytes )
+        self.serial.write( bytes )
+        
+    def write_t(self,bytes):
+        self.print_t( "sending", bytes )
+        self.serial.write( bytes )
+
+    def flush(self):
+        self.serial.flush()
+    
     def readlines(self):
         r = self.serial.readlines()
+        self.print( "received", r )
         return r
     
     def send_cntrl_c(self):
         """send cntrl + c to micropython"""
-        self.serial.write( [0x03] ) # cntrl c 
-        self.serial.flush()
+        self.write_t( [0x03] ) # cntrl c 
+        self.flush()
         r = self.readlines()
         return r    
 
     def send_cntrl_a(self):
         """send cntrl + a to micropython"""
-        self.serial.write( [0x01] ) # cntrl a
-        self.serial.flush()
+        self.write_t( [0x01] ) # cntrl a
+        self.flush()
         r = self.readlines()
         return r    
 
     def get_ok(self):
         """get OK after entering raw-repl"""
-        res = self.serial.read(2)
+        res = self.read(2)
         #print(res)
         return res.decode().lower() == "ok"
 
@@ -87,10 +105,10 @@ class MPyControl:
         r = self.send_cntrl_a()
         #print(r)
         
-        self.serial.write( cmd.encode() ) # encode for sending raw bytes
+        self.write_t( cmd.encode() ) # encode for sending raw bytes
         
-        self.serial.write( [0x04] ) # cntrl d, leave raw-repl
-        self.serial.flush()
+        self.write_t( [0x04] ) # cntrl d, leave raw-repl
+        self.flush()
         r = self.get_ok()
         if not r:
             raise Exception("could not enter raw-repl")
@@ -99,15 +117,15 @@ class MPyControl:
 
     def send_reset(self):
         """reset the board"""
-        self.serial.write( [0x03,0x04] ) # cntrl c + cntrl d, reset board
-        self.serial.flush()
+        self.write_t( [0x03,0x04] ) # cntrl c + cntrl d, reset board
+        self.flush()
         r = self.readlines()
         return r    
 
     def send_hardreset(self):
         """hard reset the board"""
-        self.serial.write( [0x03] ) # cntrl c
-        self.serial.flush()
+        self.write_t( [0x03] ) # cntrl c
+        self.flush()
         cmd = """
             import machine
             machine.reset()
@@ -124,6 +142,26 @@ class MPyControl:
         r = self.sendcmd( cmd )
         return r
 
+    def send_collect_ids(self):
+        """collect several number/info/id's eg. machine.unique_id(), wlan mac etc"""
+        cmd = """
+            import machine, sys, network, ubinascii, json
+            _ids = {}
+            _ids["unique_id"] = ubinascii.hexlify( machine.unique_id() )
+            _ids["platform"] = sys.platform
+            _ids["version"] = sys.version
+            _ids["byteorder"] = sys.byteorder
+            _ids["wlan"] = ubinascii.hexlify(network.WLAN(network.STA_IF).config('mac'))
+            _ids["ap"] = ubinascii.hexlify(network.WLAN(network.AP_IF).config('mac'))
+            print( json.dumps( _ids ) )
+            """
+        r = self.sendcmd( cmd )
+        if len(r)==0:
+            raise Exception("timeout during execution")
+        all_ids = json.loads( r[0].decode() )
+        return all_ids
+        
+
     def cmd_ls(self,path="."):
         """get a directoty list from mpy board"""
         cmd = """
@@ -136,7 +174,6 @@ class MPyControl:
             print( json.dumps( _files ) )
             """
         r = self.sendcmd( cmd % path )
-        self.print( "received", r )
         if len(r)==0:
             raise Exception("timeout during execution")
         files = json.loads( r[0].decode() )
@@ -180,7 +217,6 @@ class MPyControl:
             print( json.dumps( _del ) )
             """
         r = self.sendcmd( cmd % fnam )
-        self.print( "received", r )
         if len(r)==0:
             raise Exception("timeout during execution")
         #files = json.loads( r[0].decode() )
@@ -246,7 +282,7 @@ class MPyControl:
                     print( json.dumps( _data ) )
                 """
             r = self.sendcmd( cmd % (fnam,pos,blk_size) )
-            self.print( "received", pos, blk_size, r )
+            self.print( "received", pos, blk_size )
             if len(r)==0:
                 raise Exception("timeout during execution")
             part = self._get_part( r[0] )
@@ -298,7 +334,7 @@ class MPyControl:
             if ACKN and len(r)>0:
                 if r[0] != ACKN:
                     raise Exception( "send error", r )
-            self.print( "received", r )
+            #self.print( "received", r )
             
         return r
 
