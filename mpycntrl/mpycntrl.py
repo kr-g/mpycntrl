@@ -1,6 +1,6 @@
 import io, os, sys, time
 import binascii, json, textwrap
-import serial
+import serial # its pyserial
 
 class _ChangeTimeout:
     
@@ -27,7 +27,7 @@ class _ChangeTimeout:
 
 class MPyControl:
     
-    VERSION = "0.01"
+    VERSION = "0.0.1b"
 
     """
 
@@ -57,18 +57,22 @@ class MPyControl:
         """change the timeout securely in a with code block"""
         return _ChangeTimeout( self, timeout )
     
+    def readlines(self):
+        r = self.serial.readlines()
+        return r
+    
     def send_cntrl_c(self):
         """send cntrl + c to micropython"""
         self.serial.write( [0x03] ) # cntrl c 
         self.serial.flush()
-        r = self.serial.readlines()
+        r = self.readlines()
         return r    
 
     def send_cntrl_a(self):
         """send cntrl + a to micropython"""
         self.serial.write( [0x01] ) # cntrl a
         self.serial.flush()
-        r = self.serial.readlines()
+        r = self.readlines()
         return r    
 
     def get_ok(self):
@@ -90,14 +94,14 @@ class MPyControl:
         r = self.get_ok()
         if not r:
             raise Exception("could not enter raw-repl")
-        r = self.serial.readlines()
+        r = self.readlines()
         return r    
 
     def send_reset(self):
         """reset the board"""
         self.serial.write( [0x03,0x04] ) # cntrl c + cntrl d, reset board
         self.serial.flush()
-        r = self.serial.readlines()
+        r = self.readlines()
         return r    
 
     def send_hardreset(self):

@@ -70,4 +70,15 @@ def sample_code():
             print( "received", r )
             print( "execution time:", to.diff_time() )
             
+        # hard reset the micropython board
+        r = mpyc.send_hardreset()
+        print( "received", r )
+        
+        # follow the output
+        # loop until users breaks with cntrl+c
+        while True:
+            r = mpyc.readlines()        
+            for l in r:
+                print( r )
+            
 sample_code()
