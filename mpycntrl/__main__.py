@@ -1,5 +1,5 @@
 
-from . mpycntrl import *
+from mpycntrl import *
 
 def print_tr( tr, l, head="received", debug=True ):
     if tr:

@@ -5,7 +5,7 @@ with open("README.MD", "r") as fh:
 
 setuptools.setup(
     name="mpycntrl", 
-    version="0.0.3",
+    version="0.0.4",
     author="k.r. goger",
     author_email="k.r.goger+mpycntrl@gmail.com",
     description="Control MicroPython with your own code",
