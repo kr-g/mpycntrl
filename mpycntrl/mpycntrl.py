@@ -31,7 +31,7 @@ class MPyControl:
         control micropython with your own code
     """
 
-    VERSION = "0.0.4"
+    VERSION = "0.0.5"
 
     def __init__(self, serial, debug=True, trace=False, tout=None):
         self.serial = serial
@@ -89,6 +89,20 @@ class MPyControl:
     def send_cntrl_a(self):
         """send cntrl + a to micropython"""
         self.write_t( [0x01] ) # cntrl a
+        self.flush()
+        r = self.readlines()
+        return r    
+
+    def send_cntrl_b(self):
+        """send cntrl + b to micropython"""
+        self.write_t( [0x02] ) # cntrl b
+        self.flush()
+        r = self.readlines()
+        return r    
+
+    def send_cntrl_d(self):
+        """send cntrl + d to micropython"""
+        self.write_t( [0x04] ) # cntrl d
         self.flush()
         r = self.readlines()
         return r    
