@@ -35,7 +35,8 @@ def main():
     timeout = .35
 
     import argparse
-    parser = argparse.ArgumentParser(description='Control MicroPython via cmd line')
+    parser = argparse.ArgumentParser(prog='mpycntrl', usage='%(prog)s [options]',
+                                     description='Control MicroPython via cmd line')
     parser.add_argument("-v", "--version", dest='show_version', action="store_true",
                         help="show version info and exit", default=False )
     

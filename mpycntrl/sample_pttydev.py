@@ -2,24 +2,57 @@
 import serial # its pyserial 
 from mpycntrl import *
 
-def sample_code():
+#
+# pttydev must installed manually before!!!
+#
+from pttydev import *
+
+
+def get_pttyopen():
+
+    port = '/dev/ttyUSB0'
+    baudrate = 115200
+    bytesize = 8
+    parity = 'N'
+    stopbits = 1
+    timeout = 0.25
+
+    return pttyopen(port=port, baudrate=baudrate,
+                    bytesize=bytesize, parity=parity, stopbits=stopbits,
+                    timeout=timeout)
+
+def get_pttywsopen():    
+    return pttywsopen("ws://your-ip:8266","your-password")
+
+    
+def sample():
     
     debug = True # display more information 
     trace = False # display no detail trace information 
 
-    port = '/dev/ttyUSB0'
-    baud = 115200
-    bytesize = 8
-    parity = 'N'
-    stopbits = 1
-    timeout = .35
+    tty = PseudoTTY(
+                    # uncomment the part you want to test
+                    get_pttyopen,
+                    #get_pttywsopen,
+                    
+                    #thrd_reader=_the_thread_reader,
+                    
+                    timeout=0.35,
+                    block_size=512,
+                    reconnect_delay=1,
+                    
+                    debug=True,
+                    #trace_on=True,                    
+                    thrd_debug=True,
+                    thrd_trace_on=True
+                    )
 
-    with serial.Serial(port=port, baudrate=baud,
-                       bytesize=bytesize, parity=parity, stopbits=stopbits,
-                       timeout=timeout) as ser:
-
-        mpyc = MPyControl(ser,debug=debug,trace=trace)
-            
+    with tty.open() as octx:
+        
+        octx.waitready()
+        
+        mpyc = MPyControl(octx,debug=debug,trace=trace)
+        
         # enter raw-repl mode
         r = mpyc.send_cntrl_c()
         print( "received", r )
@@ -27,7 +60,17 @@ def sample_code():
         # get directory listing
         r = mpyc.cmd_ls()
         print( "received", r )
-        
+        # get directory listing
+        r = mpyc.cmd_ls()
+        print( "received", r )
+        # get directory listing
+        r = mpyc.cmd_ls()
+        print( "received", r )
+
+        # get a hash for boot.py
+        r = mpyc.cmd_hash("boot.py")
+        print( "received", r )
+
         # create folders
         r = mpyc.cmd_mkdirs("www/others")
         print( "received", r )
@@ -74,11 +117,11 @@ def sample_code():
         # get some info from micropython
         r = mpyc.send_collect_ids()
         print( "received", r )
-        
+
         # get a hash for boot.py
         r = mpyc.cmd_hash("boot.py")
         print( "received", r )
-        
+
         # hard reset the micropython board
         r = mpyc.send_hardreset()
         print( "received", r )
@@ -90,4 +133,7 @@ def sample_code():
             for l in r:
                 print( r )
             
-sample_code()
+            
+if __name__=='__main__':
+    sample()
+

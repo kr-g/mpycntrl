@@ -31,7 +31,7 @@ class MPyControl:
         control micropython with your own code
     """
 
-    VERSION = "0.0.5"
+    VERSION = "0.0.6"
 
     def __init__(self, serial, debug=True, trace=False, tout=None):
         self.serial = serial
@@ -78,7 +78,7 @@ class MPyControl:
         r = self.serial.readlines()
         self.print( "received", r )
         return r
-    
+        
     def send_cntrl_c(self):
         """send cntrl + c to micropython"""
         self.write_t( [0x03] ) # cntrl c 
@@ -90,7 +90,28 @@ class MPyControl:
         """send cntrl + a to micropython"""
         self.write_t( [0x01] ) # cntrl a
         self.flush()
-        r = self.readlines()
+        cnt = 10
+        while cnt>0:
+            cnt-=1
+            r = self.serial.readline()
+            if r!=None:
+                self.print("cntrl+a discard", r )
+                if r.find(b"raw REPL")>=0:
+                    break
+            else:
+                print("cntrl+a timeout")
+        cnt = 10
+        while cnt>0:
+            cnt-=1
+            r = self.serial.read()
+            if r!=None:
+                self.print("cntrl+a discard", r )
+                if r.find(b">")>=0:
+                    break
+            else:
+                print("cntrl+a timeout")
+                
+        #self.serial.reset_input_buffer()
         return r    
 
     def send_cntrl_b(self):
@@ -109,17 +130,27 @@ class MPyControl:
 
     def get_ok(self):
         """get OK after entering raw-repl"""
-        res = self.read(2)
-        #print(res)
-        return res.decode().lower() == "ok"
+        self.print("waiting for OK")
+        chb = bytearray()
+        while True:
+            ch = self.read(1)
+            if ch != None and ch[0] != ord(">"):
+                chb.append(ch[0])
+                break
+        res = self.read(1)
+        chb.extend(res)
+        self.print("recdeived for OK", chb)
+        return chb.decode().lower() == "ok"
 
     def sendcmd( self, cmd ):        
         """send a command and wait for result"""
-        cmd = textwrap.dedent( cmd ) # remove common leading withspace 
+        cmd = textwrap.dedent( cmd ) # remove common leading withspace
+        print(cmd)
+        print(len(cmd))
         r = self.send_cntrl_a()
-        #print(r)
-        
-        self.write_t( cmd.encode() ) # encode for sending raw bytes
+        #self.print("cntrl+a resp", r)
+        cmd = cmd.encode()
+        self.write_t( cmd ) # encode for sending raw bytes
         
         self.write_t( [0x04] ) # cntrl d, leave raw-repl
         self.flush()
@@ -127,6 +158,7 @@ class MPyControl:
         if not r:
             raise Exception("could not enter raw-repl")
         r = self.readlines()
+        self.serial.reset_input_buffer()
         return r    
 
     def send_reset(self):
@@ -239,7 +271,7 @@ class MPyControl:
     def cmd_mkdirs(self,path):
         """create path recursive, including missing sub-direcories, on the mpy board"""
         cmd = """
-            import uos
+            import uos, json
             _tocreate = '%s'.split('/')
             _path = ""
             _sep = ""
@@ -352,3 +384,26 @@ class MPyControl:
             
         return r
 
+    def cmd_hash(self,fnam):
+        """get a sha hash for a remote file"""
+        cmd = """
+            import uhashlib, ubinascii, json
+            _fnam = '%s'
+            try:
+                _sha = uhashlib.sha256()
+                with open(_fnam) as _f:
+                    while True:
+                        _cb = _f.read(256)
+                        if len(_cb)==0:
+                            break
+                        _sha.update(_cb)
+                _o = {
+                    'file' : _fnam,
+                    'sha' : ubinascii.hexlify( _sha.digest() ).decode(),
+                }
+                print( json.dumps( _o ) )
+            except Exception as ex:
+                print( "error", ex )
+            """
+        r = self.sendcmd( cmd % fnam )
+        return r
