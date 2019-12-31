@@ -7,6 +7,9 @@ Control MicroPython with your own coding
 
 can be used with minor changes with [pttydev](https://github.com/kr-g/pttydev)
 
+***don't forget to use `ptty.waitready()` after `open()`***
+
+
 sample code [sample_pttydev.py](https://github.com/kr-g/mpycntrl/blob/master/mpycntrl/sample_pttydev.py)
 
 the websocket device is __experimental__ and will fail when sending longer strings (commands) to MicroPython
