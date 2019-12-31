@@ -11,7 +11,7 @@ class _ChangeTimeout:
         self.newtimeout = timeout
         self.oldtimeout = mpyc.serial.timeout
         self.debug=debug
-    
+     
     def __enter__(self):
         self.mpyc.serial.timeout = self.newtimeout
         self.starttime = time.time()

@@ -1,0 +1,15 @@
+
+bin/
+dist/
+build/
+include/
+lib/
+lib64
+share/
+**/__pycache__/
+*.egg-info
+pyvenv.cfg
+
+mpycntrl/pttydev
+mpycntrl/websocket
+

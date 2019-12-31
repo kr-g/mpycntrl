@@ -240,10 +240,10 @@ def send_cmd(cmd):
 
     return resp
 
-url = "ws://192.168.178.20:8266"
+url = "ws://192.168.178.21:8266"
 ws = create_connection(url,
-                            timeout=5,
-                            sockopt=((socket.IPPROTO_TCP, socket.TCP_NODELAY, 1),)
+                            #timeout=5,
+                            sockopt=((socket.IPPROTO_TCP, socket.TCP_NODELAY, 0),)
                             )
 time.sleep(.1)
 r = ws.recv()
