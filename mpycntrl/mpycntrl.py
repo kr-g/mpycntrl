@@ -31,7 +31,7 @@ class MPyControl:
         control micropython with your own code
     """
 
-    VERSION = "0.0.7a"
+    VERSION = "0.0.7"
 
     def __init__(self, serial, debug=True, trace=False, tout=None):
         self.serial = serial
