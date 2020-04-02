@@ -21,8 +21,20 @@ def get_pttyopen():
                     bytesize=bytesize, parity=parity, stopbits=stopbits,
                     timeout=timeout)
 
-def get_pttywsopen():    
-    return pttywsopen("ws://your-ip:8266","your-password")
+# put here the board IP adr
+IP_ADR = "192.168.178.30"
+IP_ADR = "192.168.178.26"
+
+IP_PORT = 8266
+IP_PASS = "123456"
+
+
+def get_pttywsopen():
+    # check this !!!
+    # ESP32 delay 0.3-0.5
+    # ESP8266 delay 0.01
+    delay = 0.5
+    return pttywsopen( f"ws://{IP_ADR}:{IP_PORT}", IP_PASS, write_delay=delay )
 
     
 def sample():
