@@ -301,7 +301,7 @@ class MPyControl:
             return None
         hexdata = o["data"]
         bytes = binascii.unhexlify( hexdata )
-        if size is not len(bytes):
+        if size != len(bytes):
             raise Exception("data corrupted" )
         o['data'] = bytes
         return o

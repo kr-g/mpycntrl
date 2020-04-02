@@ -91,9 +91,11 @@ def main():
     group.add_argument( "-rmdir", "-rd", dest="rm_r_path", metavar="PATH", type=str, action="store",
                         help="remove folder and all containing files and sub folders", nargs=1 )
     group.add_argument( "-get", dest="get_path", metavar="PATH", type=str, action="store",
-                        help="get file from MicroPython", nargs=2 )
+                        help="get file from MicroPython", nargs="+" )
     group.add_argument( "-put", dest="put_path", metavar="PATH", type=str, action="store",
                         help="put file on MicroPhyton", nargs="+" )
+    group.add_argument("-hash", dest='hash_file', metavar="FILE", action="store",
+                       type=str, nargs=1, help="get hash value for a file" )
 
     args = parser.parse_args()
     
@@ -161,6 +163,8 @@ def main():
             fnam = args.get_path[0]
             dest = fnam if len(args.get_path)==1 else args.get_path[1]
             r = mpyc.cmd_get( fnam, dest=dest, blk_size=args.blocksize )
+        if args.hash_file:
+            r = mpyc.cmd_hash( args.hash_file[0] )
 
         if r:
             if isinstance(r, list):
