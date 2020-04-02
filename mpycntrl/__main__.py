@@ -35,21 +35,31 @@ def main():
     timeout = .35
 
     import argparse
-    parser = argparse.ArgumentParser(prog='mpycntrl', usage='%(prog)s [options]',
+    parser = argparse.ArgumentParser(prog='mpycntrl', usage='python3 -m %(prog)s [DEVICE-PARAMETER] [options]',
                                      description='Control MicroPython via cmd line')
     parser.add_argument("-v", "--version", dest='show_version', action="store_true",
                         help="show version info and exit", default=False )
-    
-    parser.add_argument("-port", "-p", type=str, dest='port', action="store",
+
+    parsergroupws = parser.add_argument_group("PTTY", "websocket parameter" )
+    parsergroupws.add_argument("-host", "-ip", type=str, dest='host_ip', action="store", metavar="IP",                               
+                        help="ip adress to use (default: %(default)s)" )
+    parsergroupws.add_argument("-hostport", "-ipport", "-ipp", type=str, dest='host_port', action="store", metavar="PORT",                               
+                        help="ip port to use (default: %(default)s)", default=8266 )
+    parsergroupws.add_argument("-passwd", "-pass", "-pwd", type=str, dest='host_pass', action="store", metavar="PASSWD",
+                        help="password to use (default: %(default)s)", default=123456 )
+
+    parsergrouptty = parser.add_argument_group("TTY", "serial parameter" )
+    parsergrouptty.add_argument("-port", "-p", type=str, dest='port', action="store",
                         help="port/device to use (default: %(default)s)", default=port )
-    parser.add_argument("-baud", "-b", type=int, dest='baud', action="store",
+    parsergrouptty.add_argument("-baud", "-b", type=int, dest='baud', action="store",
                         help="baud rate to use (default: %(default)s)", default=baud )
-    parser.add_argument("-bytesize", "-cs", type=int, dest='bytesize', action="store",
+    parsergrouptty.add_argument("-bytesize", "-cs", type=int, dest='bytesize', action="store",
                         help="bytesize to use (default: %(default)s)", default=bytesize )
-    parser.add_argument("-parity", type=str, dest='parity', action="store",
+    parsergrouptty.add_argument("-parity", type=str, dest='parity', action="store",
                         help="parity to use (default: %(default)s)", default=parity, choices=['N', 'E', 'O'] )
-    parser.add_argument("-stopbits", type=int, dest='stopbits', action="store",
+    parsergrouptty.add_argument("-stopbits", type=int, dest='stopbits', action="store",
                         help="stopbits to use (default: %(default)s)", default=stopbits )
+    
     parser.add_argument("-timeout", "-to", type=float, dest='timeout', action="store",
                         help="timeout in sec to use (default: %(default)s)", default=timeout )
     parser.add_argument("-trace", "-t", dest='trace', action="store_true",
@@ -107,6 +117,9 @@ def main():
         return
 
     start_time = time.time()
+    
+    if args.host_ip != None:
+        raise Exception("ptty device not yet implemented")
 
     with serial.Serial(port=args.port, baudrate=args.baud,
                        bytesize=args.bytesize, parity=args.parity, stopbits=args.stopbits,
